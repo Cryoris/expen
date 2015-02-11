@@ -1,0 +1,1 @@
+Little project to record expenses and income. 
