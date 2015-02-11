@@ -228,7 +228,7 @@ void m_move(const char where, std::string file_name){
             else if (currency == "e")
                 currency = "EUR";
             else
-                currency = "UNVALID";
+                currency = "INVALID";
 
             if(valid_am(amount, currency))
                 cor_am = true;
