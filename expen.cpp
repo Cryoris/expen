@@ -66,7 +66,7 @@ bool valid_am(std::string amount, std::string currency){
     if(check.eof())
         cor_amount = true;
 
-    if (!(currency == "UNVALID"))
+    if (!(currency == "INVALID"))
         cor_cur = true;
 
     if(cor_amount && cor_cur)
