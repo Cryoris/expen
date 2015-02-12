@@ -66,7 +66,7 @@ bool valid_am(std::string amount, std::string currency){
     if(check.eof())
         cor_amount = true;
 
-    if (!(currency == "UNVALID"))
+    if (!(currency == "INVALID"))
         cor_cur = true;
 
     if(cor_amount && cor_cur)
@@ -228,7 +228,7 @@ void m_move(const char where, std::string file_name){
             else if (currency == "e")
                 currency = "EUR";
             else
-                currency = "UNVALID";
+                currency = "INVALID";
 
             if(valid_am(amount, currency))
                 cor_am = true;
