@@ -3,7 +3,7 @@
 #include <ctime>
 #include <sstream>
 
-// need to be declared bc used in final_check
+// need to be declared because used in final_check
 void m_move (const char, std::string);
 
 std::string get_date(){
