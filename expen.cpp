@@ -161,7 +161,7 @@ void ex_rate(std::string action){
 
 }
 
-unsigned int ctoascii (const char c){
+unsigned int inascii (const char c){
     unsigned int i = c;
     return i;
 }
@@ -170,7 +170,7 @@ int cur_change (int amount, std::string original_cur, std::string new_cur){
 
     // CHF = 67 - EUR = 69
     std::stringstream ss;
-    ss << ctoascii(original_cur[0]) << ctoascii(new_cur[0]);
+    ss << inascii(original_cur[0]) << inascii(new_cur[0]);
     unsigned int from_to;
     ss >> from_to;
 
@@ -280,18 +280,19 @@ void m_move(const char where, std::string file_name){
         }
     final_check(&where, &file_name, &date, &amount, &currency, &remark);
 }
-// TO DO:
-// - consider currencies when adding amounts
+
 // - display currency when displaying amount
 void m_calc(std::string* file_name){
 
-    int calc = 0;
+    int sum = 0;
     std::ifstream r_file((*file_name).c_str());
 
     if (r_file.is_open()){
         std::string current_am, current_line, sink;
         char current_cur;
-        unsigned int current_val;
+        int current_val;
+        int val_CHF = 0;
+        int val_EUR = 0;
         while(std::getline(r_file, current_line)){
 
             std::stringstream cur_line_ss (current_line);
@@ -306,10 +307,8 @@ void m_calc(std::string* file_name){
             // get currency
             current_cur = current_am[current_am.length() - 4];
 
-            // get amount
+            // get sign
             std::string current_sgn;
-
-            // std::cout << current_am << ":: " << (current_am[1] == '-') << std::endl;
             if(current_am[1] == '-')
                 current_sgn = "NEG";
             else
@@ -323,23 +322,43 @@ void m_calc(std::string* file_name){
             ss >> current_val;
 
             if(current_sgn == "NEG")
-                calc -= current_val;
-            else
-                calc += current_val;
+                current_val = -current_val;
+
+            switch (inascii(current_cur)){
+            case 67:
+                val_CHF += current_val;
+                break;
+            case 69:
+                val_EUR += current_val;
+                break;
+            }
+//            std::cout << "\n----------------------------------\n";
+//            std::cout << "val_CHF = " << val_CHF << " -- val_EUR = " << val_EUR << std::endl;
+//            std::cout << "\n----------------------------------\n";
         }
 
-        char cur_out;
-        int calc_e = calc;
+        char scur_out;
+        std::string lcur_out;
 
         std::cout << "In which currency? (<C>HF, <E>UR) > ";
-        std::cin >> cur_out;
+        std::cin >> scur_out;
 
-        if (cur_out == 'C' || cur_out == 'c')
-            calc_e = cur_change(calc, "CHF", "EUR");
+        switch (inascii(scur_out)){
+        case 67: case 99: // c = 99
+            sum += val_CHF;
+            sum += cur_change(val_EUR, "EUR", "CHF");
+            lcur_out = "CHF";
+            break;
+        case 69: case 101: // e = 101
+            sum += val_EUR;
+            sum += cur_change(val_CHF, "CHF", "EUR");
+            lcur_out = "EUR";
+            break;
+        }
 
-        std::string calc_str = itos(calc_e);
-        format_am(calc_str);
-        std::cout << calc_str;
+        std::string sum_str = itos(sum);
+        format_am(sum_str);
+        std::cout << sum_str << " " << lcur_out << std::endl;
     }
     else
         std::cout << "Unable to open file!";
@@ -351,6 +370,7 @@ int main(void){
     std::string file_name = "expen.txt";
     char check;
 
+while(true){
     std::cout << "To change the exchange rate(s) enter <X>. \n\n";
     std::cout << "Money in <I> or out <O> or calculate <C> > ";
     std::cin >> check;
@@ -364,5 +384,6 @@ int main(void){
     if (check == 'X' || check == 'x')
         ex_rate("upd");
 
+}
     return 0;
 }
