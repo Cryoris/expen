@@ -17,10 +17,17 @@ std::string get_date(){
 
 }
 
-int ctoi (const char c){
+unsigned int ctoi (const char c){
 
     int i = c - 48;
     return i;
+
+}
+
+char itoc (const unsigned int i){
+
+    char c = i + 48;
+    return c;
 
 }
 
@@ -32,6 +39,7 @@ std::string itos (const int i){
     return i_str;
 
 }
+
 
 bool valid_date(std::string date){
 
@@ -66,7 +74,7 @@ bool valid_am(std::string amount, std::string currency){
     if(check.eof())
         cor_amount = true;
 
-    if (!(currency == "INVALID"))
+    if (!(currency == "UNVALID"))
         cor_cur = true;
 
     if(cor_amount && cor_cur)
@@ -166,8 +174,11 @@ unsigned int inascii (const char c){
     return i;
 }
 
-int cur_change (int amount, std::string original_cur, std::string new_cur){
+// PRE: give a amount in original_cur (in cents, rappen, ...)
+// POST: returns the given amount in new_cur (in cents, rappen, ...)
+double cur_change (double amount, std::string original_cur, std::string new_cur){
 
+    // create "changecodes" (eg. 6769 for CHF to EUR)
     // CHF = 67 - EUR = 69
     std::stringstream ss;
     ss << inascii(original_cur[0]) << inascii(new_cur[0]);
@@ -178,12 +189,14 @@ int cur_change (int amount, std::string original_cur, std::string new_cur){
     switch (from_to){
     case 6967:
         rate = 1.05;
+        break;
     case 6769:
-        rate = 0.95;
+        rate = 1/1.05;
+        break;
     }
 
-    std::cout << "Rate: " << rate << " Code: " << from_to << std::endl;
-    return (amount*rate);
+    return amount*rate;
+
 
 }
 
@@ -228,7 +241,7 @@ void m_move(const char where, std::string file_name){
             else if (currency == "e")
                 currency = "EUR";
             else
-                currency = "INVALID";
+                currency = "UNVALID";
 
             if(valid_am(amount, currency))
                 cor_am = true;
@@ -327,14 +340,13 @@ void m_calc(std::string* file_name){
             switch (inascii(current_cur)){
             case 67:
                 val_CHF += current_val;
+                std::cout << "val_CHF = " << val_CHF << std::endl;
                 break;
             case 69:
                 val_EUR += current_val;
+                std::cout << "val_EUR = " << val_EUR << std::endl;
                 break;
             }
-//            std::cout << "\n----------------------------------\n";
-//            std::cout << "val_CHF = " << val_CHF << " -- val_EUR = " << val_EUR << std::endl;
-//            std::cout << "\n----------------------------------\n";
         }
 
         char scur_out;
@@ -343,19 +355,26 @@ void m_calc(std::string* file_name){
         std::cout << "In which currency? (<C>HF, <E>UR) > ";
         std::cin >> scur_out;
 
+        std::cout << "val_CHF = " << val_CHF << std::endl;
+        std::cout << "val_EUR = " << val_EUR << std::endl;
+
         switch (inascii(scur_out)){
         case 67: case 99: // c = 99
+            std::cout << "Sum = " << sum << std::endl;
             sum += val_CHF;
-            sum += cur_change(val_EUR, "EUR", "CHF");
+            std::cout << "Sum = " << sum << std::endl;
+            if (val_EUR != 0)
+                sum += cur_change(val_EUR, "EUR", "CHF");
             lcur_out = "CHF";
             break;
         case 69: case 101: // e = 101
             sum += val_EUR;
-            sum += cur_change(val_CHF, "CHF", "EUR");
+            if (val_CHF != 0)
+                sum += cur_change(val_CHF, "CHF", "EUR");
             lcur_out = "EUR";
             break;
         }
-
+        std::cout << "CUR CHNG = " << cur_change(val_EUR, "EUR", "CHF") << std::endl;
         std::string sum_str = itos(sum);
         format_am(sum_str);
         std::cout << sum_str << " " << lcur_out << std::endl;
