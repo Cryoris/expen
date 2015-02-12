@@ -8,10 +8,10 @@ void m_move (const char, std::string);
 
 std::string get_date(){
 
-    time_t t = time(0); // get current time
+    // get current time
+    time_t t = time(0);
     struct tm* now = localtime(&t);
-    char date[11]; // somehow 11 chars are needed although there are only 10 used (xx/xx/xxx)
-
+    char date[11];
     strftime(date, sizeof(date), "%d/%m/%Y" ,now);
     return date;
 
@@ -40,11 +40,17 @@ std::string itos (const int i){
 
 }
 
+unsigned int inascii (const char c){
+
+    unsigned int i = c;
+    return i;
+
+}
 
 bool valid_date(std::string date){
 
     std::stringstream check(date);
-    int d,m,y;
+    unsigned int d,m,y;
 
     check >> d;
     check.ignore(1);
@@ -110,7 +116,6 @@ void reformat_am(std::string& amount){
 
 void final_check (const char* where, std::string* file_name, std::string* date, std::string* amount, std::string* currency, std::string* remark){
 
-    // DONE
     bool final_check = false;
     while (final_check == false){
 
@@ -164,15 +169,11 @@ void ex_rate(std::string action){
 
     // -> store in .txt file?
 
-    std::cout << "Sorry, no databases included yet, exchange rates need to be changes manually.";
+    std::cout << "Sorry, this part is not done yet, exchange rates need to be changes manually.";
     std::cout << "(Which means going through the source code and changing the variables.) \n";
 
 }
 
-unsigned int inascii (const char c){
-    unsigned int i = c;
-    return i;
-}
 
 // PRE: give a amount in original_cur (in cents, rappen, ...)
 // POST: returns the given amount in new_cur (in cents, rappen, ...)
@@ -194,9 +195,7 @@ double cur_change (double amount, std::string original_cur, std::string new_cur)
         rate = 1/1.05;
         break;
     }
-
     return amount*rate;
-
 
 }
 
@@ -292,6 +291,7 @@ void m_move(const char where, std::string file_name){
             }
         }
     final_check(&where, &file_name, &date, &amount, &currency, &remark);
+
 }
 
 // - display currency when displaying amount
@@ -340,11 +340,9 @@ void m_calc(std::string* file_name){
             switch (inascii(current_cur)){
             case 67:
                 val_CHF += current_val;
-                std::cout << "val_CHF = " << val_CHF << std::endl;
                 break;
             case 69:
                 val_EUR += current_val;
-                std::cout << "val_EUR = " << val_EUR << std::endl;
                 break;
             }
         }
@@ -355,14 +353,9 @@ void m_calc(std::string* file_name){
         std::cout << "In which currency? (<C>HF, <E>UR) > ";
         std::cin >> scur_out;
 
-        std::cout << "val_CHF = " << val_CHF << std::endl;
-        std::cout << "val_EUR = " << val_EUR << std::endl;
-
         switch (inascii(scur_out)){
         case 67: case 99: // c = 99
-            std::cout << "Sum = " << sum << std::endl;
             sum += val_CHF;
-            std::cout << "Sum = " << sum << std::endl;
             if (val_EUR != 0)
                 sum += cur_change(val_EUR, "EUR", "CHF");
             lcur_out = "CHF";
@@ -374,10 +367,11 @@ void m_calc(std::string* file_name){
             lcur_out = "EUR";
             break;
         }
-        std::cout << "CUR CHNG = " << cur_change(val_EUR, "EUR", "CHF") << std::endl;
         std::string sum_str = itos(sum);
         format_am(sum_str);
-        std::cout << sum_str << " " << lcur_out << std::endl;
+        std::cout << "-----------------------------------\n";
+        std::cout << "Total: " << sum_str << " " << lcur_out << std::endl;
+        std::cout << "-----------------------------------\n";
     }
     else
         std::cout << "Unable to open file!";
@@ -389,20 +383,21 @@ int main(void){
     std::string file_name = "expen.txt";
     char check;
 
-while(true){
-    std::cout << "To change the exchange rate(s) enter <X>. \n\n";
-    std::cout << "Money in <I> or out <O> or calculate <C> > ";
-    std::cin >> check;
+    while(true){
+        std::cout << "To change the exchange rate(s) enter <X>. \n\n";
+        std::cout << "Money in <I> or out <O> or calculate <C> > ";
+        std::cin >> check;
 
-    if (check == 'I' || check == 'i')
-        m_move('I', file_name);
-    if (check == 'O' || check == 'o')
-        m_move('O', file_name);
-    if (check == 'C' || check == 'c')
-        m_calc(&file_name);
-    if (check == 'X' || check == 'x')
-        ex_rate("upd");
+        if (check == 'I' || check == 'i')
+            m_move('I', file_name);
+        if (check == 'O' || check == 'o')
+            m_move('O', file_name);
+        if (check == 'C' || check == 'c')
+            m_calc(&file_name);
+        if (check == 'X' || check == 'x')
+            ex_rate("upd");
 
-}
+    }
     return 0;
+
 }
